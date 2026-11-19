@@ -33,6 +33,7 @@ public class SiteViewModel extends ViewModel {
     private final MutableLiveData<Result> player;
     private final MutableLiveData<Result> search;
     private final MutableLiveData<Result> action;
+    private final MutableLiveData<Result> video;
 
     private final Map<TaskType, ListenableFuture<?>> futures;
     private final Map<TaskType, AtomicInteger> taskIds;
@@ -44,6 +45,7 @@ public class SiteViewModel extends ViewModel {
         player = new MutableLiveData<>();
         search = new MutableLiveData<>();
         action = new MutableLiveData<>();
+        video = new MutableLiveData<>();
         searchEpoch = new AtomicInteger(0);
         searchFuture = new CopyOnWriteArrayList<>();
         futures = new EnumMap<>(TaskType.class);
@@ -67,11 +69,16 @@ public class SiteViewModel extends ViewModel {
         return action;
     }
 
+    public LiveData<Result> getVideo() {
+        return video;
+    }
+
     public SiteViewModel init() {
         search.setValue(null);
         result.setValue(null);
         player.setValue(null);
         action.setValue(null);
+        video.setValue(null);
         return this;
     }
 
@@ -93,6 +100,10 @@ public class SiteViewModel extends ViewModel {
 
     public void playerContent(String key, String flag, String id) {
         execute(TaskType.PLAYER, player, () -> SiteApi.playerContent(key, flag, id));
+    }
+
+    public void videoContent(String key, String id, String flag, int index) {
+        execute(TaskType.VIDEO, video, () -> SiteApi.videoContent(key, id, flag, index));
     }
 
     public void searchContent(Site site, String keyword, boolean quick, String page) {
@@ -147,5 +158,5 @@ public class SiteViewModel extends ViewModel {
         futures.values().forEach(future -> future.cancel(true));
     }
 
-    private enum TaskType {RESULT, PLAYER, ACTION}
+    private enum TaskType {RESULT, PLAYER, ACTION, VIDEO}
 }

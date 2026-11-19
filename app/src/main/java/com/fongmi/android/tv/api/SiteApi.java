@@ -18,8 +18,10 @@ import com.fongmi.android.tv.utils.Sniffer;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.crawler.SpiderDebug;
 import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Json;
 import com.github.catvod.utils.Prefers;
 import com.github.catvod.utils.Util;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -125,7 +127,7 @@ public class SiteApi {
             String detailContent = site.recent().spider().detailContent(Arrays.asList(id));
             SpiderDebug.log("detail", detailContent);
             Result result = Result.fromJson(detailContent);
-            Source.get().parse(result.getVod().setFlags());
+            Source.get().parse(result.getVod().setFlags(result.isLazyVideo()));
             return result;
         } else {
             ArrayMap<String, String> params = new ArrayMap<>();
@@ -137,6 +139,28 @@ public class SiteApi {
             Source.get().parse(result.getVod().setFlags());
             return result;
         }
+    }
+
+    @NonNull
+    public static Result videoContent(@NonNull String key, @NonNull String id, @NonNull String flag, int index) throws Exception {
+        SpiderDebug.log("video", "key=%s,id=%s,flag=%s,index=%d", key, id, flag, index);
+        Site site = VodConfig.get().getSite(key);
+        String videoContent = site.recent().spider().detailVideoContent(id, flag, index);
+        SpiderDebug.log("video", videoContent);
+        if (TextUtils.isEmpty(videoContent)) return Result.error(ResUtil.getString(R.string.play_video_empty));
+        JsonObject object = Json.parse(videoContent).getAsJsonObject();
+        String from = Json.safeString(object, "vod_play_from");
+        String urls = Json.safeString(object, "vod_play_url");
+        String error = Json.safeString(object, "error");
+        Vod vod = new Vod();
+        vod.setId(id);
+        vod.setPlayFrom(from.isEmpty() ? flag : from);
+        vod.setPlayUrl(urls);
+        vod.setFlags();
+        Result result = Result.vod(vod);
+        result.setFlag(flag);
+        if (!error.isEmpty()) result.setMsg(error);
+        return result;
     }
 
     @NonNull

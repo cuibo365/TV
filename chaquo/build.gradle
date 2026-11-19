@@ -3,6 +3,8 @@ plugins {
     id 'com.chaquo.python'
 }
 
+layout.buildDirectory.set(file('D:/fongmi-build/chaquo'))
+
 android {
     namespace = 'com.fongmi.chaquo'
 
@@ -15,6 +17,7 @@ android {
         targetSdk 37
         python {
             version = "3.10"
+            buildPython "D:/tools/python310/python.exe"
             pip {
                 install("-r", "requirements.txt")
             }

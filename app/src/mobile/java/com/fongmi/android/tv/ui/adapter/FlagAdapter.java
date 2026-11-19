@@ -49,6 +49,10 @@ public class FlagAdapter extends RecyclerView.Adapter<FlagAdapter.ViewHolder> {
         return mItems.get(position);
     }
 
+    public int indexOf(Flag item) {
+        return mItems.indexOf(item);
+    }
+
     public List<Flag> getItems() {
         return mItems;
     }

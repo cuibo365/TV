@@ -179,6 +179,14 @@ public class TypeFragment extends BaseFragment implements CustomScroller.Callbac
 
     private void addVideo(Result result) {
         Style style = result.getStyle(getStyle());
+        // DEBUG: 查看分类数据解析后的真实结构（确认 Gson 是否解析出 per-item style）
+        Vod first = result.getList().isEmpty() ? null : result.getList().get(0);
+        android.util.Log.d("category-debug", "isFolder=" + isFolder()
+                + " fallback=" + getStyle().getType()
+                + " resolved=" + style.getType()
+                + " size=" + result.getList().size()
+                + " firstStyle=" + (first == null ? "null" : (first.getStyle() == null ? "NULL" : first.getStyle().getType() + "/" + first.getStyle().getRatio()))
+                + " firstName=" + (first == null ? "null" : first.getName()));
         if (style.isList()) mAdapter.addAll(mAdapter.size(), result.getList());
         else addGrid(result.getList(), style);
         checkMore();

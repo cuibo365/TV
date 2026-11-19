@@ -83,6 +83,12 @@ public class Spider extends com.github.catvod.crawler.Spider {
     }
 
     @Override
+    public String detailVideoContent(String vodId, String flag, int index) throws Exception {
+        // 老爬虫未实现该函数时 Async.run 返回 null，由壳回退到旧逻辑
+        return (String) call("detailVideoContent", vodId, flag, index);
+    }
+
+    @Override
     public String searchContent(String key, boolean quick) throws Exception {
         return (String) call("search", key, quick);
     }

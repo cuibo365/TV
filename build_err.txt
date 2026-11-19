@@ -1,0 +1,35 @@
+Warning: SDK processing. This version only understands SDK XML versions up to 3 but an SDK XML file of version 4 was encountered. This can happen if you use versions of Android Studio and the command-line tools that were released at different times.
+注: [1] Wrote GeneratedAppGlideModule with: [com.bumptech.glide.integration.okhttp3.OkHttpLibraryGlideModule, com.bumptech.glide.integration.avif.AvifGlideModule]
+D:\workspace-buddy\fongmi-tv\app\src\leanback\java\com\fongmi\android\tv\ui\fragment\TypeFragment.java:189: 错误: 找不到符号
+                + " firstName=" + (first == null ? "null" : first.getVodName()));
+                                                                 ^
+  符号:   方法 getVodName()
+  位置: 类型为Vod的变量 first
+注: 某些输入文件使用或覆盖了已过时的 API。
+注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+注: D:\workspace-buddy\fongmi-tv\app\src\leanback\java\com\fongmi\android\tv\ui\fragment\TypeFragment.java使用了未经检查或不安全的操作。
+注: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+1 个错误
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileLeanbackArm64_v8aDebugJavaWithJavac'.
+> Compilation failed; see the compiler output below.
+  注: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+  注: D:\workspace-buddy\fongmi-tv\app\src\leanback\java\com\fongmi\android\tv\ui\fragment\TypeFragment.java使用了未经检查或不安全的操作。
+  注: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+  注: 某些输入文件使用或覆盖了已过时的 API。
+  注: [1] Wrote GeneratedAppGlideModule with: [com.bumptech.glide.integration.okhttp3.OkHttpLibraryGlideModule, com.bumptech.glide.integration.avif.AvifGlideModule]
+  D:\workspace-buddy\fongmi-tv\app\src\leanback\java\com\fongmi\android\tv\ui\fragment\TypeFragment.java:189: 错误: 找不到符号
+                  + " firstName=" + (first == null ? "null" : first.getVodName()));
+                                                                   ^
+    符号:   方法 getVodName()
+    位置: 类型为Vod的变量 first
+  1 个错误
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 22s

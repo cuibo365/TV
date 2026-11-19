@@ -94,6 +94,8 @@ public class Result implements Parcelable {
     private Integer code;
     @SerializedName("jx")
     private Integer jx;
+    @SerializedName("hasDetailVideoContent")
+    private Boolean hasDetailVideoContent;
     @SerializedName("drm")
     private Drm drm;
 
@@ -309,6 +311,10 @@ public class Result implements Parcelable {
 
     public boolean hasMsg() {
         return !getMsg().isEmpty();
+    }
+
+    public boolean isLazyVideo() {
+        return Boolean.TRUE.equals(hasDetailVideoContent);
     }
 
     public boolean hasArtwork() {

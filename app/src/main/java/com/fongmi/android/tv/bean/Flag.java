@@ -38,6 +38,9 @@ public class Flag implements Parcelable, Diffable<Flag> {
     private boolean activated;
     private int position;
 
+    private transient boolean loaded;
+    private transient String error;
+
     public Flag() {
         this.position = -1;
         this.episodes = new ArrayList<>();
@@ -89,6 +92,7 @@ public class Flag implements Parcelable, Diffable<Flag> {
     }
 
     public void setEpisodes(String url) {
+        if (TextUtils.isEmpty(url) || url.trim().isEmpty()) return;
         String[] urls = url.contains("#") ? url.split("#") : new String[]{url};
         for (int i = 0; i < urls.length; i++) {
             String[] split = urls[i].split("\\$", 2);
@@ -100,6 +104,22 @@ public class Flag implements Parcelable, Diffable<Flag> {
 
     public boolean isActivated() {
         return activated;
+    }
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
+    }
+
+    public String getError() {
+        return TextUtils.isEmpty(error) ? "" : error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 
     public void setActivated(Flag item) {

@@ -288,10 +288,14 @@ public class Vod implements Parcelable, Diffable<Vod> {
     }
 
     public Vod setFlags() {
+        return setFlags(false);
+    }
+
+    public Vod setFlags(boolean lazy) {
         String[] playUrls = getPlayUrl().split("\\$\\$\\$");
         String[] playFlags = getPlayFrom().split("\\$\\$\\$");
         if (!getFlags().isEmpty()) for (Flag item : getFlags()) item.setEpisodes(item.getUrls());
-        else IntStream.range(0, playFlags.length).filter(i -> !playFlags[i].trim().isEmpty() && i < playUrls.length && !TextUtils.isEmpty(playUrls[i])).mapToObj(i -> Flag.create(playFlags[i].trim(), playUrls[i])).forEach(getFlags()::add);
+        else IntStream.range(0, playFlags.length).filter(i -> !playFlags[i].trim().isEmpty() && (lazy || (i < playUrls.length && !TextUtils.isEmpty(playUrls[i])))).mapToObj(i -> Flag.create(playFlags[i].trim(), i < playUrls.length ? playUrls[i] : "")).forEach(getFlags()::add);
         return this;
     }
 

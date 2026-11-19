@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.fongmi.android.tv"
+        applicationId "com.fongmi.android.tv.cuibo"
         minSdk 24
         //noinspection ExpiredTargetSdkVersion
         targetSdk 28
@@ -53,6 +53,11 @@ android {
     }
 
     signingConfigs {
+        // debug 包补上 v1 签名：minSdk>=24 时 AGP 默认只签 v2，部分电视端安装器（老解析路径）碰到 v2-only 包会报「解析程序包异常」
+        debug {
+            enableV1Signing = true
+            enableV2Signing = true
+        }
         release {
             storeFile file(localProps['storeFile'])
             keyAlias localProps['keyAlias']
@@ -62,6 +67,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.debug
+        }
         release {
             minifyEnabled = true
             shrinkResources = true
