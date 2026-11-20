@@ -42,3 +42,12 @@ dependencies {
         exclude group: 'org.codehaus.mojo', module: 'animal-sniffer-annotations'
     }
 }
+
+// 产出驱动开发用的 API jar（驱动工程以 compileOnly 引用，不打包进 spider jar；运行时由 TV APK 提供）
+tasks.register('apiJar', Jar) {
+    dependsOn 'compileReleaseJavaWithJavac'
+    archiveFileName = 'catvod-api.jar'
+    destinationDirectory = layout.buildDirectory.dir('outputs/api')
+    from layout.buildDirectory.dir('intermediates/javac/release/compileReleaseJavaWithJavac/classes')
+    include 'com/github/catvod/**'
+}
