@@ -1,5 +1,6 @@
 package com.fongmi.android.tv.ui.adapter;
 
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -73,7 +74,8 @@ public class HistoryAdapter extends BaseDiffAdapter<History, HistoryAdapter.View
         holder.binding.remark.setText(item.getVodRemarks());
         holder.binding.site.setVisibility(item.getSiteVisible());
         holder.binding.progress.setMax((int) item.getDuration());
-        holder.binding.progress.setProgress((int) item.getPosition(), animate);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) holder.binding.progress.setProgress((int) item.getPosition(), animate);
+        else holder.binding.progress.setProgress((int) item.getPosition());
         holder.binding.delete.setVisibility(!delete ? View.GONE : View.VISIBLE);
         holder.binding.remark.setVisibility(delete || same ? View.GONE : View.VISIBLE);
         ImgUtil.load(item.getVodName(), item.getVodPic(), holder.binding.image);

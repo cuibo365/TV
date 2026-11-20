@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.WindowManager;
@@ -193,8 +194,12 @@ public abstract class PlaybackActivity extends BaseActivity implements MediaCont
         return mService != null && !isOwner();
     }
 
+    protected boolean inPipMode() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInPictureInPictureMode();
+    }
+
     private void closePiP() {
-        if (!isInPictureInPictureMode()) return;
+        if (!inPipMode()) return;
         detach();
         finish();
     }

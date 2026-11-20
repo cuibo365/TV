@@ -6,6 +6,8 @@ import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
 
+import androidx.core.text.HtmlCompat;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -132,7 +134,7 @@ public class Vod implements Parcelable, Diffable<Vod> {
     }
 
     public String getName() {
-        return TextUtils.isEmpty(vodName) ? "" : Html.fromHtml(vodName, Html.FROM_HTML_MODE_LEGACY).toString().trim();
+        return TextUtils.isEmpty(vodName) ? "" : HtmlCompat.fromHtml(vodName, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim();
     }
 
     public void setName(String vodName) {

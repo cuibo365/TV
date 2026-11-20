@@ -507,7 +507,7 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
     }
 
     private void showControl() {
-        if (service() == null || isInPictureInPictureMode()) return;
+        if (service() == null || inPipMode()) return;
         mBinding.control.info.setVisibility(player().isEmpty() ? View.GONE : View.VISIBLE);
         mBinding.control.cast.setVisibility(player().isEmpty() ? View.GONE : View.VISIBLE);
         mBinding.control.right.rotate.setVisibility(isLock() ? View.GONE : View.VISIBLE);
@@ -526,8 +526,8 @@ public class LiveActivity extends PlaybackActivity implements CustomKeyDown.List
     }
 
     private void showInfo() {
-        mBinding.widget.infoPip.setVisibility(isInPictureInPictureMode() ? View.VISIBLE : View.GONE);
-        mBinding.widget.info.setVisibility(isInPictureInPictureMode() ? View.GONE : View.VISIBLE);
+        mBinding.widget.infoPip.setVisibility(inPipMode() ? View.VISIBLE : View.GONE);
+        mBinding.widget.info.setVisibility(inPipMode() ? View.GONE : View.VISIBLE);
         setR3Callback();
         hideControl();
         setInfo();
