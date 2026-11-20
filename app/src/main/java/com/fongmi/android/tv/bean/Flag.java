@@ -34,6 +34,8 @@ public class Flag implements Parcelable {
 
     private boolean activated;
     private int position;
+    private transient boolean loaded;
+    private transient String error;
 
     public static Flag create(String flag) {
         return new Flag(flag);
@@ -88,7 +90,32 @@ public class Flag implements Parcelable {
         this.position = position;
     }
 
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void setLoaded(boolean loaded) {
+        this.loaded = loaded;
+    }
+
+    public String getError() {
+        return TextUtils.isEmpty(error) ? "" : error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public void mergeEpisodes(List<Episode> items, boolean rev) {
+        for (Episode item : items) {
+            if (getEpisodes().contains(item)) continue;
+            if (rev) getEpisodes().add(0, item);
+            else getEpisodes().add(item);
+        }
+    }
+
     public void createEpisode(String data) {
+        if (TextUtils.isEmpty(data) || data.trim().isEmpty()) return;
         String[] urls = data.contains("#") ? data.split("#") : new String[]{data};
         for (int i = 0; i < urls.length; i++) {
             String[] split = urls[i].split("\\$", 2);

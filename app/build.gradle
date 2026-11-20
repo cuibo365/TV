@@ -9,7 +9,7 @@ android {
     flavorDimensions = ["mode", "abi"]
 
     defaultConfig {
-        applicationId "com.fongmi.android.tv"
+        applicationId "com.fongmi.android.tv.cuibo"
         minSdk 21
         //noinspection ExpiredTargetSdkVersion
         targetSdk 28

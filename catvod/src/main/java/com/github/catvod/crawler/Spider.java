@@ -36,6 +36,10 @@ public abstract class Spider {
         return "";
     }
 
+    public String detailVideoContent(String vodId, String flag, int index) throws Exception {
+        return "";
+    }
+
     public String searchContent(String key, boolean quick) throws Exception {
         return "";
     }

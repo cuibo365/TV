@@ -120,6 +120,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private Observer<Result> mObserveDetail;
     private Observer<Result> mObservePlayer;
     private Observer<Result> mObserveSearch;
+    private Observer<Result> mObserveVideo;
     private EpisodeAdapter mEpisodeAdapter;
     private QualityAdapter mQualityAdapter;
     private ControlDialog mControlDialog;
@@ -139,6 +140,8 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private boolean useParse;
     private boolean redirect;
     private boolean rotate;
+    private boolean lazyVideo;
+    private int videoPending;
     private boolean stop;
     private boolean lock;
     private Runnable mR1;
@@ -286,6 +289,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         mObserveDetail = this::setDetail;
         mObservePlayer = this::setPlayer;
         mObserveSearch = this::setSearch;
+        mObserveVideo = this::setVideo;
         mPlayers = Players.create(this);
         mDialogs = new ArrayList<>();
         mBroken = new ArrayList<>();
@@ -408,6 +412,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         mViewModel.result.observeForever(mObserveDetail);
         mViewModel.player.observeForever(mObservePlayer);
         mViewModel.search.observeForever(mObserveSearch);
+        mViewModel.video.observeForever(mObserveVideo);
         mViewModel.episode.observe(this, episode -> {
             onItemClick(episode);
             hideSheet();
@@ -440,7 +445,7 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
     private void setDetail(Result result) {
         mBinding.swipeLayout.setRefreshing(false);
         if (result.getList().isEmpty()) setEmpty(result.hasMsg());
-        else setDetail(result.getList().get(0));
+        else setDetail(result.getList().get(0), result.isLazyVideo());
         Notify.show(result.getMsg());
     }
 
@@ -463,7 +468,9 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         stopSearch();
     }
 
-    private void setDetail(Vod item) {
+    private void setDetail(Vod item, boolean lazy) {
+        lazyVideo = lazy;
+        videoPending = -1;
         mBinding.progressLayout.showContent();
         mBinding.video.setTag(item.getVodPic(getPic()));
         mBinding.name.setText(item.getVodName(getName()));
@@ -559,6 +566,39 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         setEpisodeAdapter(item.getEpisodes());
         setQualityVisible(false);
         seamless(item);
+        ensureEpisodes(item);
+    }
+
+    // 懒加载源（hasDetailVideoContent）：线路已选中但选集未取过 → detailVideoContent 现取；
+    // 已取过（含空结果）跳过；切走时撤销上一个在途线路的标记以便重试
+    private void ensureEpisodes(Flag item) {
+        if (!lazyVideo || mFlagAdapter.getItems().isEmpty()) return;
+        int index = mFlagAdapter.indexOf(item);
+        if (index < 0) return;
+        Flag target = mFlagAdapter.get(index);
+        if (!target.getEpisodes().isEmpty() || target.isLoaded()) return;
+        if (videoPending >= 0 && videoPending != index) mFlagAdapter.get(videoPending).setLoaded(false);
+        target.setLoaded(true);
+        videoPending = index;
+        mViewModel.videoContent(getKey(), getId(), target.getFlag(), index);
+    }
+
+    // 懒加载选集回填：结果按线路原位写回；当前线路刷新列表并尝试无缝续播
+    private void setVideo(Result result) {
+        videoPending = -1;
+        if (result.getList().isEmpty() || !result.getList().get(0).getVodId().equals(getId())) return;
+        int index = mFlagAdapter.indexOf(Flag.create(result.getFlag()));
+        if (index < 0) return;
+        Flag target = mFlagAdapter.get(index);
+        Vod vod = result.getList().get(0);
+        List<Episode> items = vod.getVodFlags().isEmpty() ? new ArrayList<>() : vod.getVodFlags().get(0).getEpisodes();
+        if (!items.isEmpty()) target.mergeEpisodes(items, mHistory != null && mHistory.isRevSort());
+        if (!result.getMsg().isEmpty()) target.setError(result.getMsg());
+        if (target.isActivated()) {
+            setEpisodeAdapter(target.getEpisodes());
+            if (target.getEpisodes().isEmpty()) Notify.show(result.getMsg().isEmpty() ? getString(R.string.play_video_empty) : result.getMsg());
+            else seamless(target);
+        }
     }
 
     @Override
@@ -1617,5 +1657,6 @@ public class VideoActivity extends BaseActivity implements Clock.Callback, Custo
         mViewModel.result.removeObserver(mObserveDetail);
         mViewModel.player.removeObserver(mObservePlayer);
         mViewModel.search.removeObserver(mObserveSearch);
+        mViewModel.video.removeObserver(mObserveVideo);
     }
 }

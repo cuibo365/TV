@@ -39,6 +39,9 @@ class Spider(metaclass=ABCMeta):
     def detailContent(self, ids):
         pass
 
+    def detailVideoContent(self, vodId, flag, index):
+        pass
+
     def searchContent(self, key, quick, pg="1"):
         pass
 

@@ -1,8 +1,8 @@
-lxml
-ujson
-pyquery
-requests
+lxml==4.6.3
+ujson==1.35
+pycryptodome==3.9.4
+pyquery==1.4.0
 jsonpath
+requests
 cachetools
-pycryptodome
 beautifulsoup4

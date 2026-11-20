@@ -23,8 +23,10 @@ import com.fongmi.android.tv.utils.Sniffer;
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.crawler.SpiderDebug;
 import com.github.catvod.net.OkHttp;
+import com.github.catvod.utils.Json;
 import com.github.catvod.utils.Trans;
 import com.github.catvod.utils.Util;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ public class SiteViewModel extends ViewModel {
     public MutableLiveData<Result> player;
     public MutableLiveData<Result> search;
     public MutableLiveData<Result> action;
+    public MutableLiveData<Result> video;
     private ExecutorService executor;
 
     public SiteViewModel() {
@@ -53,6 +56,7 @@ public class SiteViewModel extends ViewModel {
         this.player = new MutableLiveData<>();
         this.search = new MutableLiveData<>();
         this.action = new MutableLiveData<>();
+        this.video = new MutableLiveData<>();
     }
 
     public void setEpisode(Episode value) {
@@ -118,7 +122,7 @@ public class SiteViewModel extends ViewModel {
                 String detailContent = spider.detailContent(Arrays.asList(id));
                 SpiderDebug.log(detailContent);
                 Result result = Result.fromJson(detailContent);
-                if (!result.getList().isEmpty()) result.getList().get(0).setVodFlags();
+                if (!result.getList().isEmpty()) result.getList().get(0).setVodFlags(result.isLazyVideo());
                 if (!result.getList().isEmpty()) Source.get().parse(result.getList().get(0).getVodFlags());
                 return result;
             } else if (site.isEmpty() && "push_agent".equals(key)) {
@@ -136,10 +140,32 @@ public class SiteViewModel extends ViewModel {
                 String detailContent = call(site, params);
                 SpiderDebug.log(detailContent);
                 Result result = Result.fromType(site.getType(), detailContent);
-                if (!result.getList().isEmpty()) result.getList().get(0).setVodFlags();
+                if (!result.getList().isEmpty()) result.getList().get(0).setVodFlags(result.isLazyVideo());
                 if (!result.getList().isEmpty()) Source.get().parse(result.getList().get(0).getVodFlags());
                 return result;
             }
+        });
+    }
+
+    public void videoContent(String key, String id, String flag, int index) {
+        execute(video, () -> {
+            Site site = VodConfig.get().getSite(key);
+            String videoContent = site.recent().spider().detailVideoContent(id, flag, index);
+            SpiderDebug.log(videoContent);
+            if (TextUtils.isEmpty(videoContent)) return Result.error(ResUtil.getString(R.string.play_video_empty));
+            JsonObject object = Json.parse(videoContent).getAsJsonObject();
+            String from = Json.safeString(object, "vod_play_from");
+            String urls = Json.safeString(object, "vod_play_url");
+            String error = Json.safeString(object, "error");
+            Vod vod = new Vod();
+            vod.setVodId(id);
+            vod.setVodPlayFrom(from.isEmpty() ? flag : from);
+            vod.setVodPlayUrl(urls);
+            vod.setVodFlags();
+            Result result = Result.vod(vod);
+            result.setFlag(flag);
+            if (!error.isEmpty()) result.setMsg(error);
+            return result;
         });
     }
 

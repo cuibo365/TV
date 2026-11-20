@@ -203,4 +203,6 @@
         <item>Select subtitle track</item>
     </string-array>
 
+    <string name="play_video_empty">No episodes on this line, try another one</string>
+
 </resources>

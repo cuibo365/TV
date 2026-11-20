@@ -56,6 +56,9 @@ public class Result implements Parcelable {
     @JsonAdapter(MsgAdapter.class)
     private String msg;
 
+    @SerializedName("hasDetailVideoContent")
+    private Boolean hasDetailVideoContent;
+
     @SerializedName("danmaku")
     @JsonAdapter(DanmakuAdapter.class)
     private List<Danmaku> danmaku;
@@ -192,6 +195,10 @@ public class Result implements Parcelable {
 
     public String getMsg() {
         return TextUtils.isEmpty(msg) || getCode() != 0 ? "" : msg;
+    }
+
+    public boolean isLazyVideo() {
+        return Boolean.TRUE.equals(hasDetailVideoContent);
     }
 
     public void setMsg(String msg) {

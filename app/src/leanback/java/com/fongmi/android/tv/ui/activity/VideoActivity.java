@@ -117,6 +117,7 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
     private Observer<Result> mObserveDetail;
     private Observer<Result> mObservePlayer;
     private Observer<Result> mObserveSearch;
+    private Observer<Result> mObserveVideo;
     private QualityAdapter mQualityAdapter;
     private FlagPresenter mFlagPresenter;
     private PartPresenter mPartPresenter;
@@ -130,6 +131,8 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
     private boolean initAuto;
     private boolean autoMode;
     private boolean useParse;
+    private boolean lazyVideo;
+    private int videoPending;
     private boolean redirect;
     private Runnable mR1;
     private Runnable mR2;
@@ -277,6 +280,7 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
         mObserveDetail = this::setDetail;
         mObservePlayer = this::setPlayer;
         mObserveSearch = this::setSearch;
+        mObserveVideo = this::setVideo;
         mPlayers = Players.create(this);
         mBroken = new ArrayList<>();
         mR1 = this::hideControl;
@@ -396,6 +400,7 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
         mViewModel.result.observeForever(mObserveDetail);
         mViewModel.player.observeForever(mObservePlayer);
         mViewModel.search.observeForever(mObserveSearch);
+        mViewModel.video.observeForever(mObserveVideo);
     }
 
     private void checkCast() {
@@ -426,7 +431,7 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
 
     private void setDetail(Result result) {
         if (result.getList().isEmpty()) setEmpty(result.hasMsg());
-        else setDetail(result.getList().get(0));
+        else setDetail(result.getList().get(0), result.isLazyVideo());
         Notify.show(result.getMsg());
     }
 
@@ -447,7 +452,9 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
         stopSearch();
     }
 
-    private void setDetail(Vod item) {
+    private void setDetail(Vod item, boolean lazy) {
+        lazyVideo = lazy;
+        videoPending = -1;
         mBinding.progressLayout.showContent();
         mBinding.video.setTag(item.getVodPic(getPic()));
         mBinding.name.setText(item.getVodName(getName()));
@@ -544,6 +551,40 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
         setEpisodeAdapter(item.getEpisodes());
         setQualityVisible(false);
         seamless(item);
+        ensureEpisodes(item);
+    }
+
+    // 懒加载源（hasDetailVideoContent）：线路已选中但选集未取过 → detailVideoContent 现取；
+    // 已取过（含空结果）跳过；切走时撤销上一个在途线路的标记以便重试
+    private void ensureEpisodes(Flag item) {
+        if (!lazyVideo || mFlagAdapter.size() == 0) return;
+        int index = mFlagAdapter.indexOf(item);
+        if (index < 0) return;
+        Flag target = (Flag) mFlagAdapter.get(index);
+        if (!target.getEpisodes().isEmpty() || target.isLoaded()) return;
+        if (videoPending >= 0 && videoPending != index) ((Flag) mFlagAdapter.get(videoPending)).setLoaded(false);
+        target.setLoaded(true);
+        videoPending = index;
+        mViewModel.videoContent(getKey(), getId(), target.getFlag(), index);
+    }
+
+    // 懒加载选集回填：结果按线路原位写回；当前线路刷新列表并尝试无缝续播
+    private void setVideo(Result result) {
+        videoPending = -1;
+        if (result.getList().isEmpty() || !result.getList().get(0).getVodId().equals(getId())) return;
+        int index = mFlagAdapter.indexOf(Flag.create(result.getFlag()));
+        if (index < 0) return;
+        Flag target = (Flag) mFlagAdapter.get(index);
+        Vod vod = result.getList().get(0);
+        List<Episode> items = vod.getVodFlags().isEmpty() ? new ArrayList<>() : vod.getVodFlags().get(0).getEpisodes();
+        if (!items.isEmpty()) target.mergeEpisodes(items, mHistory != null && mHistory.isRevSort());
+        if (!result.getMsg().isEmpty()) target.setError(result.getMsg());
+        if (target.isActivated()) {
+            setEpisodeAdapter(target.getEpisodes());
+            notifyItemChanged(mBinding.flag, mFlagAdapter);
+            if (target.getEpisodes().isEmpty()) Notify.show(result.getMsg().isEmpty() ? getString(R.string.play_video_empty) : result.getMsg());
+            else seamless(target);
+        }
     }
 
     private void setEpisodeAdapter(List<Episode> items) {
@@ -1431,5 +1472,6 @@ public class VideoActivity extends BaseActivity implements CustomKeyDownVod.List
         mViewModel.result.removeObserver(mObserveDetail);
         mViewModel.player.removeObserver(mObservePlayer);
         mViewModel.search.removeObserver(mObserveSearch);
+        mViewModel.video.removeObserver(mObserveVideo);
     }
 }
