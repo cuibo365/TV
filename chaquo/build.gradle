@@ -8,16 +8,14 @@ layout.buildDirectory.set(file('D:/fongmi-build/chaquo'))
 android {
     namespace = 'com.fongmi.chaquo'
 
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk 36
 
     defaultConfig {
-        minSdk 24
+        minSdk 23
         targetSdk 37
         python {
-            version = "3.10"
-            buildPython "D:/tools/python310/python.exe"
+            version = "3.8"
+            buildPython "D:/Python38/python.exe"
             pip {
                 install("-r", "requirements.txt")
             }

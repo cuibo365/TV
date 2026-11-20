@@ -10,13 +10,11 @@ rootProject.file('local.properties').withInputStream {
 android {
     namespace = 'com.fongmi.android.tv'
 
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.fongmi.android.tv.cuibo"
-        minSdk 24
+        minSdk 23
         //noinspection ExpiredTargetSdkVersion
         targetSdk 28
         versionCode 541
@@ -171,4 +169,16 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:' + glideVersion
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.3.1'
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs_nio:2.1.5'
+}
+
+// 从根 build.gradle 挪过来：release 产物收集（Gradle 8.10 下跨项目 task 访问会报 state lock，须在本项目内定义）
+tasks.matching { it.name ==~ /assemble.+Release/ }.configureEach {
+    doLast {
+        copy {
+            from fileTree("$rootDir/app/build/outputs/apk") { include '**/release/*.apk' }
+            into "$rootDir/Release/apk"
+            eachFile { it.path = it.name }
+            includeEmptyDirs = false
+        }
+    }
 }
